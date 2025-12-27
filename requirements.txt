@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+mlflow
+streamlit
+torch
+torchvision
+pillow
