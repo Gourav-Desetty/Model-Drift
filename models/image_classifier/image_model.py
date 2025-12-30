@@ -2,7 +2,7 @@ import torch
 import torchvision.transforms as transforms
 from torchvision import models
 from PIL import Image
-from model_architecture import LeukemiaCNN
+from models.image_classifier.model_architecture import LeukemiaCNN
 
 class ImageClassifier:
     def __init__(self, model_path='leukemia_model_densenet_121_01.pth') -> None:
