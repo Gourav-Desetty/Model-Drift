@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct
 
+from prometheus_client import Gauge
+from prometheus_fastapi_instrumentator import Instrumentator
+
 load_dotenv()
 ml_models = {}
 
@@ -16,6 +19,8 @@ client = QdrantClient(
     url='https://cb31dd25-49e2-458f-a816-b7615fe710c7.us-east4-0.gcp.cloud.qdrant.io',
     api_key=os.getenv('QDRANT_API_KEY')
 )
+
+confidence_metrics = Gauge('model_confidence', 'Confidence score of the prediction', ['model_version'])
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -26,13 +31,17 @@ async def lifespan(app:FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+Instrumentator().instrument(app).expose(app)              # it automatically creates the /metric endpoint 
+
 @app.post('/predict_image')
-async def predict_image(file: UploadFile=File(...)):
+def predict_image(file: UploadFile=File(...)):
     # load the model
     model = ml_models['leukemia_clf']
 
     # make predictions
     result = model.predict(file.file)
+
+    confidence_metrics.labels(model_version='densenet_121_v1').set(result['confidence'])
 
     file.file.seek(0)
 
