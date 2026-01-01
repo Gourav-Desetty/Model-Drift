@@ -8,7 +8,7 @@ pillow
 qdrant-client
 python-multipart
 
-evidently
+evidently>=0.4.0
 
 prometheus-fastapi-instrumentator
 prometheus-client
