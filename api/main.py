@@ -54,7 +54,7 @@ def predict_image(file: UploadFile=File(...)):
             collection_name='model_drift',
             points=[
                 PointStruct(
-                    id=f"id_{str(uuid.uuid4())}",
+                    id=str(uuid.uuid4()),
                     vector=embeddings[0],
                     payload={
                         "model": 'densenet_121_v1',
