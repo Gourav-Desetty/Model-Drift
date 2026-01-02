@@ -3,6 +3,7 @@ import mlflow
 import uuid
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from models.image_classifier.image_model import ImageClassifier
 from dotenv import load_dotenv
@@ -71,3 +72,13 @@ def predict_image(file: UploadFile=File(...)):
 
     # return back the predictions
     return JSONResponse(status_code=200, content=result)
+
+drift_metric = Gauge('model_drift_score', 'P-value of Model confidence drift')
+
+class DriftInput(BaseModel):
+    drift: float
+
+@app.post("/update_drift")
+def updat_drift(data: DriftInput):
+    drift_metric.set(data.drift)
+    return JSONResponse(status_code=200, content=f'New drift score: {data.drift}')
