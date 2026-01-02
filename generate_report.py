@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import requests
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from evidently.report import Report
@@ -48,3 +49,35 @@ report = Report(
 report.run(reference_data=ref_data, current_data=curr_data)
 
 report.save_html('drift_report.html')
+
+
+report_dict = report.as_dict()
+
+drift_score = -1
+
+try:
+    for metric in report_dict['metrics']:
+        if metric['metric'] == 'DataDriftTable':
+            drift_col = metric['result']['drift_by_columns']
+            if 'Confidence' in drift_col:
+                drift_score = float(drift_col['Confidence']['drift_score'] )
+                break
+
+    print(drift_score)
+
+    if drift_score != -1:
+        api_url = "http://localhost:8000/update_drift"
+        try:
+            payload = {'drift': drift_score }
+            response = requests.post(api_url, json=payload)
+
+            if response.status_code == 200:
+                print("Sent to prometheus")
+            else:
+                print(f"API error: {response.text}")
+        except Exception as e:
+            print(f"Connection failed: Error {e}")
+    else:
+        print("Could not find confidence in DataDriftTable")
+except Exception as e:
+    print(f"Error: {e}")
