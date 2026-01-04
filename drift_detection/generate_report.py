@@ -48,7 +48,7 @@ report = Report(
 )
 report.run(reference_data=ref_data, current_data=curr_data)
 
-report.save_html('drift_report.html')
+report.save_html(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drift_report.html'))
 
 
 report_dict = report.as_dict()
